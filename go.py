@@ -1,10 +1,13 @@
 import numpy as np
 
+
+
 class Board(object):
     BLACK = 1
     WHITE = -1
     EMPTY = 0
     BORDER = 2
+
 
     def __init__(self, n, maxturn = None):
         self.maxturn = maxturn if maxturn is not None else n*n
@@ -18,9 +21,32 @@ class Board(object):
         self.round = 0
         self.MOVE = [(1,0), (0,1), (-1,0), (0,-1)]
         self.toCheck = []
-
+        self.blackHash = np.random.randint(10000, 1000000000, size = (n,n))
+        self.whiteHash = np.random.randint(10000, 1000000000, size = (n,n))
+        self.hashTable = [0]
+        self.modifsValue = dict()
 
     
+    def checkMove(self, move):
+        if(self.value[move[0]+1, move[1]+1] != self.EMPTY):
+            score = self.calculatePoint()
+            raise Exception("Les règles sont pourtant simples !!! : ")
+
+
+    def hash(self):
+        new = self.hashTable[-1]
+        for i in self.modifsValue:
+            if self.modifsValue[i] == self.BLACK:
+                new ^= self.blackHash[i]
+            else:
+                new ^= self.whiteHash[i]
+        if new in self.hashTable:
+            score = self.calculatePoint()
+            raise Exception("Les règles sont pourtant simples !!! : ")
+        else:
+            self.hashTable.append(new)
+
+
     def play(self, move):
         if move == (-1,-1):
             self.passRound += 1
@@ -32,12 +58,10 @@ class Board(object):
             return
         self.passRound = 0;
         
-        if(self.value[move[0]+1, move[1]+1] != self.EMPTY):
-            raise Exception("Les règles sont pourtant simples !!!")
+        self.checkMove(move)
 
-
-
-        self.value[move[0]+1, move[1]+1] = self.nextPlayer;    
+        self.value[move[0]+1, move[1]+1] = self.nextPlayer
+        self.modifsValue[move] = self.nextPlayer
         self.degre[move] = 0
         for x,y in self.MOVE:
             if(self.value[move[0]+x+1, move[1]+y+1] == self.EMPTY):
@@ -57,13 +81,13 @@ class Board(object):
             self.destroy(move)
 
         self.round +=1
-        if self.round == self.maxturn:
-            score = self.calculatePoint()
-            raise Exception("Vous avez vraiment joué si longtemps ? --' : " + str(score))
+        #if self.round == self.maxturn:
+        #    score = self.calculatePoint()
+        #    raise Exception("Vous avez vraiment joué si longtemps ? --' : " + str(score))
         
-        self.nextPlayer *=-1
+        self.hash()
 
-        
+        self.nextPlayer *=-1
 
         
     def decreaseDegre(self, coord):
@@ -76,6 +100,10 @@ class Board(object):
         self.parent[coord] = [-1,-1]
         self.degre[coord] = 0
         tmp = self.value[coord[0]+1, coord[1]+1]
+        if coord in self.modifsValue:
+            del self.modifsValue[coord]
+        else :
+            self.modifsValue[coord] = tmp
         self.value[coord[0]+1, coord[1]+1] = self.EMPTY
         for x,y in self.MOVE:
             if(self.value[coord[0]+x+1, coord[1]+y+1] == tmp * -1):
@@ -124,7 +152,6 @@ class Board(object):
         return toret
 
 
-
     def calculatePoint(self):
         point = [0,0]
         for x in range(self.n):
@@ -145,7 +172,6 @@ class Board(object):
                 point[1] += res[1]
         return point
 
-        
 
     def clone(self):
         toret = Board(n)
@@ -156,7 +182,3 @@ class Board(object):
         toret.passRound = self.passRound
         toret.n = self.n
         toret.round = self.round
-
-
-
-
