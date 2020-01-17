@@ -10,7 +10,7 @@ class Board(object):
 
 
     def __init__(self, n, maxturn = None):
-        self.maxturn = maxturn if maxturn is not None else n*n
+        self.maxturn = maxturn if maxturn is not None else 2*n*n
         self.value = np.zeros((n+2,n+2), dtype=int)
         self.value[0,:] = self.value[-1,:] = self.value[:,0] = self.value[:,-1] = self.BORDER
         self.parent = np.ones((n,n,2), dtype=int) * -1
@@ -21,8 +21,8 @@ class Board(object):
         self.round = 0
         self.MOVE = [(1,0), (0,1), (-1,0), (0,-1)]
         self.toCheck = []
-        self.blackHash = np.random.randint(10000, 1000000000, size = (n,n))
-        self.whiteHash = np.random.randint(10000, 1000000000, size = (n,n))
+        self.blackHash = np.random.randint(1, 1000000000, size = (n,n))
+        self.whiteHash = np.random.randint(1, 1000000000, size = (n,n))
         self.hashTable = [0]
         self.modifsValue = dict()
 
@@ -45,6 +45,7 @@ class Board(object):
             raise Exception("Les règles sont pourtant simples !!! : ")
         else:
             self.hashTable.append(new)
+        self.modifsValue = dict()
 
 
     def play(self, move):
@@ -81,9 +82,9 @@ class Board(object):
             self.destroy(move)
 
         self.round +=1
-        #if self.round == self.maxturn:
-        #    score = self.calculatePoint()
-        #    raise Exception("Vous avez vraiment joué si longtemps ? --' : " + str(score))
+        if self.round == self.maxturn:
+            score = self.calculatePoint()
+            raise Exception("Vous avez vraiment joué si longtemps ? --' : " + str(score))
         
         self.hash()
 
