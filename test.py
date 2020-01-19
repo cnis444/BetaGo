@@ -3,10 +3,12 @@ from go import Board
 
 b = Board(19)
 
-for x in range(19):
-    for y in range(19):
-        #print(b.value)
-        b.play((x,y))
+b.play((0,0))
+b.play((1,0))
+b.play((0,1))
+b.play((-1,-1))
+b.play((-1,-1))
+        
 
 
 #dic = dict()
