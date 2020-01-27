@@ -1,7 +1,6 @@
 import numpy as np
 
 
-
 BLACK = 1
 WHITE = -1
 EMPTY = 0
@@ -20,7 +19,6 @@ class InvalideMoveException(Exception) :
     def __str__(self):
         winner = "blanc." if self.winner == WHITE else "noire."
         return "Les règles sont pourtant simples !!! " + self.message + " Le vainqueur est le joueur " + winner
-
 
 
 class GameEndedException(Exception) :
@@ -89,8 +87,8 @@ class Board(object):
         self.whiteHash = np.random.randint(1, 1000000000, size = (n,n))
         self.hashTable = [0]
         self.modifsValue = dict()
+        self.index = [(x,y) for x in range(n) for y in range(n)]
 
-    
     def checkMove(self, move):
         if(self.value[move[0]+1, move[1]+1] != EMPTY):
             raise InvalidePlacementException(self.nextPlayer * -1)
@@ -110,7 +108,6 @@ class Board(object):
         else:
             self.hashTable.append(new)
         self.modifsValue = dict()
-
 
     def play(self, move):
         if move == (-1,-1):
@@ -153,13 +150,11 @@ class Board(object):
         self.hash()
 
         self.nextPlayer *=-1
-
         
     def decreaseDegre(self, coord):
         self.degre[self.getParent(coord)] -= 1
         if self.degre[self.getParent(coord)] == 0:
             self.destroy(coord)
-
 
     def destroy(self, coord):
         self.parent[coord] = [-1,-1]
@@ -177,7 +172,6 @@ class Board(object):
             elif(self.value[coord[0]+x+1, coord[1]+y+1] == tmp):
                 self.destroy((coord[0]+x, coord[1]+y))
 
-
     def getParent(self, coord):
         if self.parent[coord][0] == -1 and self.parent[coord][1] == -1:
             return coord
@@ -186,11 +180,9 @@ class Board(object):
         self.parent[coord][1] = parcoord[1]
         return parcoord
 
-
     def merge(self, coord1, coord2):
         self.degre[self.getParent(coord2)] += self.degre[self.getParent(coord1)]
         self.parent[self.getParent(coord1)] = self.getParent(coord2) 
-
 
     def explore(self, type, coord):
         self.toCheck.remove(coord)
@@ -213,7 +205,6 @@ class Board(object):
                     toret[0] = 0
         return toret
 
-
     def calculatePoint(self):
         point = [0,0]
         for x in range(self.n):
@@ -234,7 +225,6 @@ class Board(object):
                 point[1] += res[1]
         return {BLACK: point[0], WHITE: point[1]}
 
-
     def clone(self):
         toret = Board(n)
         toret.value = np.copy(self.value)
@@ -244,3 +234,29 @@ class Board(object):
         toret.passRound = self.passRound
         toret.n = self.n
         toret.round = self.round
+        return toret
+
+    def legal_move(self):
+        tmp = np.where(self.value == EMPTY)
+        emptyPlace = list(zip(tmp[0], tmp[1]))
+        #for x in range(self.n):
+        #    for y in range(self.n):
+        #        val = self.value[x+1,y+1]
+        #        if val == EMPTY:
+        #            emptyPlace.append((x,y))
+        toret = []
+        for m in emptyPlace:
+            b = self.clone()
+            try:
+                b.play(m)
+                toret.append(m)
+            except InvalideMoveException as e :
+                continue
+            except GameEndedException as e:
+                toret.append(m)
+        toret.append((-1,-1))
+        return toret
+    
+    def reprNN(self):
+        return self.value
+
